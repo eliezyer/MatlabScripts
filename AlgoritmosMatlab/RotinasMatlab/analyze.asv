@@ -1,0 +1,17 @@
+function LFPanalyze(data1,data2)
+
+setpath = input('Enter with the path to save images and data');
+path = 'E:\Pesquisa\ICEletrofisio2013FAPESP\Análise de sinais';
+name  = '140915';
+mkdir(name)
+
+%filter the specifica bands
+[data1]=bandfilter(data1,1);
+[data2]=bandfilter(data2,0);
+
+%Spectrogram in bands of electrophysiology
+BandSpectrogram(data)
+
+
+
+end

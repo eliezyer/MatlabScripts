@@ -1,0 +1,3 @@
+
+
+[coeff, score, latent] = princomp(spikes);

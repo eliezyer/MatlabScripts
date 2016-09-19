@@ -1,0 +1,87 @@
+function [specm] = BandSpectrogram_nonfiltered(data,ch)
+%Parameters
+Waves = data.Wave;
+
+NFFT = 2^nextpow2(length(data(1,1,1).Wave)); %Number of frequency points to calculate the DFT
+Fs = 1017.26; %Sampling frequency
+WindowLength = hanning(700); %Data size for analysis of DFT
+WindowOverlap = [630]; %Overlap of windows
+Nplot = ceil(100/(Fs/NFFT)) ;%Row number to plot until frequency 100 Hz (Deltafreq = Fs/NFFT)
+% spec = zeros(floor(NFFT/2)+1,31,length(data(1,1,1).epoc));
+
+
+LFPd = double(Waves(:,ch,:));%For spectrogram, X input needs to be a double variable
+
+%spectrogram
+for ind = 1:length(data(1,1,1).epoc)
+    
+    [s,f,t,spec(:,:,ind)] = spectrogram(LFPd(:,1,ind),WindowLength,WindowOverlap,NFFT,Fs,'yaxis'); %extracting PSD
+    
+
+end
+
+for epc = 0:9
+    
+    specm(:,:,epc+1) = mean(spec(:,:,(4*epc + 1) :(4*(epc+1))),3);
+
+end
+
+x = linspace(-data.time_windows(1), data.time_windows(2) + 5, size(specm,2));
+
+%plotting and saving
+cd(data.tankName(end-5:end))
+for ind = 1:10
+    
+    figure(ind)
+    title([data.tankName '- Ch14 - MeanBlock: ' int2str(ind)])
+    subplot(5,1,1)
+    imagesc(x(1,:),f(f>62 & f<120),10*log10(abs(specm(f>62 & f<120,:,ind))))
+    axis xy, hold on
+    plot([0 0], ylim,'--k', [5 5], ylim,'--k')
+    hold off
+    ylabel('fast-\gamma (61-120)')
+    xlabel('Tempo (s)')
+    colorbar
+    
+    subplot(5,1,2)
+    imagesc(x(1,:),f(f>31 & f<58),10*log10(abs(specm(f>31 & f<58,:,ind))))
+    axis xy, hold on
+    plot([0 0], ylim,'--k', [5 5], ylim,'--k')
+    hold off
+    ylabel('slow-\gamma (30 - 59 Hz)')
+    xlabel('Tempo (s)')
+    colorbar
+    
+    subplot(5,1,3)
+    imagesc(x(1,:),f(f>13 & f<29),10*log10(abs(specm(f>13 & f<29,:,ind))))
+    axis xy, hold on
+    plot([0 0], ylim,'--k', [5 5], ylim,'--k')
+    hold off
+    ylabel('\beta (12 - 30 Hz)')
+    xlabel('Tempo (s)')
+    colorbar
+    
+    subplot(5,1,4)
+    imagesc(x(1,:),f(f>4.5 & f<11.5),10*log10(abs(specm(f>4.5 & f<11.5,:,ind))))
+    axis xy, hold on
+    plot([0 0], ylim,'--k', [5 5], ylim,'--k')
+    hold off
+    ylabel('\theta (4 - 12 Hz)')
+    xlabel('Tempo (s)')
+    colorbar
+    
+    subplot(5,1,5)
+    imagesc(x(1,:),f(f>0.3 & f<4),10*log10(abs(specm(f>0.3 & f<4,:,ind))))
+    axis xy, hold on
+    plot([0 0], ylim,'--k', [5 5], ylim,'--k')
+    hold off
+    ylabel('\delta (0.3 - 4 Hz)')
+    xlabel('Tempo (s)')
+    colorbar
+    
+    print('-dpng',[data.tankName '- Ch14 - MeanBlock: ' int2str(ind)] ); 
+end
+
+% save([data.tankName,'SpectrogramBands.mat'],'spec')
+
+end

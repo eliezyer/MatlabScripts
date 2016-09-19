@@ -1,0 +1,78 @@
+% dt = 1/1000;
+% t = 1:dt:10;
+% frequency = 70;
+% s = sin(2*pi*7*t);
+% 
+% for ind = 1:length(s)-1
+%     
+%     if ( (s(1,ind) > 0)  && (s(1,ind+1) > s(1,ind)))
+%         gamma(1,ind) = sin(2*pi*frequency*t(ind));
+%     else
+%         gamma(1,ind) = 0;%+randn(1);
+%     end
+%     
+% end
+%  gamma(1,ind+1) = 0; %+randn(1);
+% signal = s + gamma;
+% 
+% signal = LFP;
+
+Waves = data.Wave;
+ch = 16;
+for trials = 1:40
+signal = squeeze(Waves(:,ch,trials));
+signal = signal - mean(signal);
+ indF = 0;
+ 
+for Phfreq = .5:0.25:12 %em hz
+     [bf,af] = fir1(200, [Phfreq/500 (Phfreq+2)/500]);
+     f = filtfilt(bf,1,signal);
+     indF = indF + 1;
+             % hilbert para fase
+        auxPhase = hilbert(f);
+        realPha  = real(auxPhase);
+        imagPha  = imag(auxPhase);
+        Phase = atan2(imagPha,realPha);
+        Phase = Phase + pi;
+        
+        indA = 0;
+        
+    for Afreq = 30:0.25:50
+        [b] = fir1(200, [Afreq/500 (Afreq+4)/500]);
+        Ap = filtfilt(b,1,signal);
+        indA = indA + 1;
+
+        %hilbert para envelope amplitude
+        auxAmp = hilbert(Ap);
+        realAmp = real(auxAmp);
+        imagAmp = imag(auxAmp);
+        Amp = sqrt(realAmp.^2 + imagAmp.^2);
+        
+        %criar bin de fases, no artigo a imagem parece ser de 18�, dando 20 bins no
+        %total
+        
+        bin = 18*pi/180;
+        oldBin = 0;
+        newBin = bin;
+        AmpMedia = 0;
+        
+        for bins = 1:round(360*pi/(180*bin));
+            index = find(Phase > oldBin & Phase < newBin);
+            AmpMedia(bins) = mean(Amp(index));
+            oldBin = newBin;
+            newBin = oldBin + bin;
+        end
+        
+        Amplitude = AmpMedia./sum(AmpMedia);
+
+        Uniforme = ones(1,20)./20;
+          %divergencia de kullback leibler
+        Dkl =  sum(Amplitude .* log( Amplitude ./ Uniforme )) ;
+        MI(indF,indA,trials) = Dkl/log(20);        
+        
+    end
+    
+end
+
+end
+

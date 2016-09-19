@@ -1,0 +1,24 @@
+pasta = 'C:\Users\Eletrofisiologia\Desktop\ICEliezyer\LFPanalise'; %pasta para pegar os dados
+diret = dir(pasta); %
+numarqs = size(diret,1);
+
+for narq = 3:(numarqs + 1),
+
+    
+    
+cd(pasta)       
+nomearq_LFP = diret(narq).name;
+load(nomearq_LFP)
+data1 = data;
+
+shockarq = ['Shock',nomearq_LFP(end-9:end)];
+load(shockarq)
+data2 = data;
+clear data
+
+name = nomearq_LFP(end-9:end-4);
+
+LFPanalyzer(data1,data2,name)
+
+
+end

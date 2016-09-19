@@ -1,0 +1,22 @@
+    pathin = [''];
+    pathout = [''];
+
+    diret = dir(pathin);
+    numarqs = size(diret,1);
+for narq = 3:length(numarqs)
+    
+    cd(pathin)
+    
+    for ti = 1:6
+        tankName = ['Interval',num2str(ti),tankDir(end-18:end-13)];
+        block = blockarq.shock;
+        time = [(ti-1)*10*60 (ti*10)*60];
+        tic
+        load(
+        [P1,F1] = WelchMethod(data);
+        save(['PSDWelch_',tankName],'P1','F1')
+        toc
+
+    end
+    clear data
+end
